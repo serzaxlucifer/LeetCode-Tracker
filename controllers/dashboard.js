@@ -1,53 +1,104 @@
-const express = require('express');
+const {createSpreadsheet} = require('../services/sheets');
 const mongoose = require('mongoose');
-const auth = require('../middleware/auth');
-const User = mongoose.model('User');
-const Problem = mongoose.model('Problem');
-const Submission = mongoose.model('Submission');
+const User = require('../models/User'); 
+const Submission = require('../models/Submissions'); 
+const Problem = require('../models/Problem'); 
 const MaterializedView = require('../models/materializedView'); 
 
 /* Aggregation Pipelines are required! */
 
+exports.DBchange = async (req, res) => 
+    {
+        try{
+            
+            const {STORE_TO_DB} = req.body;
+            const original = req.user.storeToDB;
+            req.user.storeToDB = STORE_TO_DB;
+
+            if(original === false && STORE_TO_DB === true)
+            {
+                console.log("Writing a new Spreadsheet");
+                const sid = await createSpreadsheet("LeetCode Tracker", req);
+                req.user.spreadSheetId = sid;
+                await req.user.save();
+
+            }
+            else if(original === true && STORE_TO_DB === false)
+            {
+                // Change rowIds to -1
+                await Submission.updateMany({ userId: req.user._id }, { $set: { rowNum: -1 } })
+            }
+        
+            await req.user.save();
+        }
+
+        catch (err) 
+        {
+            console.error(req.user._id, " (DBChange):  ", err);
+            return res.status(500).json({ message: "An error occurred", error: err.message });
+        }
+        return res.status(200).json({ message: "Success" });
+    };
+
 exports.updateProfile = async (req, res) => 
 {
     const {firstName="", lastName="", leetcodeId="", displayName=""} = req.body;
-    user = await User.findById(req.user._id);
 
     if(firstName)
     {
-        user.firstName = firstName;
+        req.user.firstName = firstName;
     }
     if(lastName)
     {
-        user.lastName = lastName;
+        req.user.lastName = lastName;
     }
     if(displayName)
     {
-        user.displayName = displayName;
+        req.user.displayName = displayName;
     }
     if(leetcodeId)
     {
-        user.leetcodeId = leetcodeId;
+        req.user.leetcodeId = leetcodeId;
     }
 
-    await user.save();
+    try
+    {
+        await req.user.save();
+    }
+    catch (err) 
+    {
+        console.error(req.user._id, " (UPDATE PROFILE):  ", err.message);
+        return res.status(500).json({ message: "An error occurred", error: err.message });
+    }
+    return res.status(200).json({ message: "Success" });
 };
 
 exports.getProfile = async (req, res) => 
 {
-    user = await User.find(req.user._id);
+    try {
+        console.log(req.user._id);
 
-    let obb = {email: user.email, 
-        leetcodeId: user.leetcodeId, 
-        displayName: user.displayName, 
-        firstName: user.firstName, 
-        lastName: user.lastName, 
-        createdAt: user.createdAt,
-        storeToDB: user.storeToDB,
-        spreadsheetId: user.spreadsheetId
+
+    let obb = {email: req.user.email, 
+        leetcodeId: req.user.leetcodeId, 
+        displayName: req.user.displayName, 
+        firstName: req.user.firstName, 
+        lastName: req.user.lastName, 
+        createdAt: req.user.createdAt,
+        storeToDB: req.user.storeToDB,
+        spreadsheetId: req.user.spreadSheetId
     };
 
-    return res.send(200).json(obb);
+    console.log(obb);
+
+    return res.status(200).json({ message: "Success", data: obb });
+}
+
+    catch (err) 
+    {
+        console.error(req.user._id, " (GET PROFILE):   ", err.message);
+        return res.status(500).json({ message: "An error occurred", error: err.message });
+    }
 };
 
 exports.deleteProfile = async (req, res) => {
@@ -84,26 +135,22 @@ exports.deleteProfile = async (req, res) => {
         await session.commitTransaction();
         session.endSession();
 
-        return res.status(200).json({
-            message: "Deleted Successfully.",
-        });
-
     } catch (err) {
         await session.abortTransaction();
         session.endSession();
         console.error(err);
         return res.status(500).json({ message: "An error occurred", error: err.message });
     }
+    return res.status(200).json({ message: "Success"});
 };
 
 exports.getRevision = async (req, res) => {
     try {
-        const userId = req.user._id;
 
         const result = await Submission.aggregate([
             {
                 $match: {
-                    userId: mongoose.Types.ObjectId(userId),
+                    userId: req.user._id,
                     markForRevisit: { $gte: 1 }
                 }
             },
@@ -111,18 +158,30 @@ exports.getRevision = async (req, res) => {
                 $sample: { size: 1 } // Randomly sample one document
             },
             {
+                $sample: { size: 1 } // Randomly sample one document
+            },
+            {
                 $lookup: {
-                    from: 'Problem', // Collection name for the Problem schema
+                    from: 'problems', // Collection name for the Problem schema
                     localField: 'problemId',
                     foreignField: 'problemId',
                     as: 'problemDetails'
                 }
             },
             {
+                $unwind: '$problemDetails' // Unwind the array to access the fields directly
+            },
+            {
+              $addFields: {
+                problemLink: '$problemDetails.problemLink'
+              }
+            },
+            {
                 $project: {
                     problemId: 1,
                     problemName: 1,
-                    problemLink: { $arrayElemAt: ['$problemDetails.problemLink', 2] }, // Access the third element
+                    problemTopic: 1,
+                    problemLink: 1,
                     _id: 0 // Optionally exclude the _id field
                 }
             }
@@ -134,10 +193,13 @@ exports.getRevision = async (req, res) => {
             return res.status(404).json({ message: "No marked submissions found." });
         }
 
-        return res.status(200).json(result[0]);
+        return res.status(200).json({ message: "Success", data: result });
 
-    } catch (err) {
-        console.error(err);
+    } 
+
+    catch (err) 
+    {
+        console.error(req.user._id, " (GET RANDOM):   ", err.message);
         return res.status(500).json({ message: "An error occurred", error: err.message });
     }
 };
@@ -145,13 +207,12 @@ exports.getRevision = async (req, res) => {
 
 exports.getRevisionTopic = async (req, res) => {
     try {
-        const userId = req.user._id;
         const {problemTopic} = req.body;
 
         const result = await Submission.aggregate([
             {
                 $match: {
-                    userId: mongoose.Types.ObjectId(userId),
+                    userId: req.user._id,
                     markForRevisit: { $gte: 1 },
                     problemTopic: problemTopic
                 }
@@ -161,17 +222,26 @@ exports.getRevisionTopic = async (req, res) => {
             },
             {
                 $lookup: {
-                    from: 'Problem', // Collection name for the Problem schema
+                    from: 'problems', // Collection name for the Problem schema
                     localField: 'problemId',
                     foreignField: 'problemId',
                     as: 'problemDetails'
                 }
             },
             {
+                $unwind: '$problemDetails' // Unwind the array to access the fields directly
+            },
+            {
+              $addFields: {
+                problemLink: '$problemDetails.problemLink'
+              }
+            },
+            {
                 $project: {
                     problemId: 1,
                     problemName: 1,
-                    problemLink: { $arrayElemAt: ['$problemDetails.problemLink', 2] }, // Access the third element
+                    problemTopic: 1,
+                    problemLink: 1,
                     _id: 0 // Optionally exclude the _id field
                 }
             }
@@ -182,10 +252,15 @@ exports.getRevisionTopic = async (req, res) => {
             return res.status(404).json({ message: "No marked submissions found." });
         }
 
-        return res.status(200).json(result[0]);
+        return res.status(200).json({ message: "Success", data: result });
 
-    } catch (err) {
-        console.error(err);
+    } 
+
+    
+
+    catch (err) 
+    {
+        console.error(req.user._id, " (GET RANDOM TOPIC):   ", err.message);
         return res.status(500).json({ message: "An error occurred", error: err.message });
     }
 };
@@ -199,11 +274,12 @@ exports.getCommunityStats = async (req, res) => {
 
         // Fetch the submissions with pagination
         const submissions = await MaterializedView.find().skip(skip).limit(limit);
+        return res.status(200).json({ message: "Success", data: submissions });
+    } 
 
-        // Return the paginated results
-        return res.status(200).json(submissions);
-    } catch (err) {
-        console.error(err);
+    catch (err) 
+    {
+        console.error(req.user._id, " (GET COMMUNITY):   ", err.message);
         return res.status(500).json({ message: "An error occurred", error: err.message });
     }
 
@@ -213,13 +289,16 @@ exports.getMySubmissions = async (req, res) =>
 {
     const pageSize = 50;
     const page = req.query.page;
-    let totalSubmissions = await User.findById(req.user._id).totalSubmissions;
-    const skipCount = totalSubmissions - (page * pageSize);
+    let totalSubmissions = req.user.totalSubmissions;
+    let skipCount = totalSubmissions - (page * pageSize);
 
     if(skipCount < 0)
     {
-        res.status(200).json([]);
+        skipCount = 0;
     }
+
+    try
+    {
 
     const pipeline = [
         { $match: { userId: req.user._id } },
@@ -227,7 +306,7 @@ exports.getMySubmissions = async (req, res) =>
         { $skip: skipCount },
         
         { $limit: pageSize },
-        
+
         {
           $lookup: {
             from: 'problems',
@@ -236,12 +315,13 @@ exports.getMySubmissions = async (req, res) =>
             as: 'problemDetails'
           }
         },
-        
+
+        {
+            $unwind: '$problemDetails' // Unwind the array to access the fields directly
+        },
         {
           $addFields: {
-            problemLink: {
-              $arrayElemAt: [{ $ifNull: ['$problemDetails.problemLink', null] }, 0]
-            }
+            problemLink: '$problemDetails.problemLink'
           }
         },
 
@@ -261,8 +341,14 @@ exports.getMySubmissions = async (req, res) =>
         }
       ];
     
-      const submissions = await Submission.aggregate(pipeline).toArray();
-      res.status(200).json(submissions);
+      const submissions = await Submission.aggregate(pipeline);
+      return res.status(200).json({ message: "Success", data: submissions });
+    }
+    catch (err) 
+    {
+        console.error(req.user._id, " (GET MY SUBMISSIONS):   ", err.message);
+        return res.status(500).json({ message: "An error occurred", error: err.message });
+    }
 };
 
 exports.getTopic = async (req, res) => {
@@ -270,7 +356,7 @@ exports.getTopic = async (req, res) => {
     const page = req.query.page;
     const topic = req.query.topic;
     const skipCount = ((page-1) * pageSize);
-
+    
     const pipeline = [
         { $match: { userId: req.user._id, problemTopic: topic } },
         
@@ -288,10 +374,11 @@ exports.getTopic = async (req, res) => {
         },
         
         {
+            $unwind: '$problemDetails' // Unwind the array to access the fields directly
+        },
+        {
           $addFields: {
-            problemLink: {
-              $arrayElemAt: [{ $ifNull: ['$problemDetails.problemLink', null] }, 0]
-            }
+            problemLink: '$problemDetails.problemLink'
           }
         },
 
@@ -310,9 +397,17 @@ exports.getTopic = async (req, res) => {
           }
         }
       ];
+
+      try {
     
-      const submissions = await Submission.aggregate(pipeline).toArray();
-      return submissions;
+      const submissions = await Submission.aggregate(pipeline);
+      return res.status(200).json({ message: "Success", data: submissions });
+      }
+      catch (err) 
+    {
+        console.error(req.user._id, " (GET MY TOPIC):   ", err.message);
+        return res.status(500).json({ message: "An error occurred", error: err.message });
+    }
 };
 
 // exports.getCommunityTopic = async (req, res) => {

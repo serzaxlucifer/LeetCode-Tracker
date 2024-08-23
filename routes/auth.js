@@ -7,7 +7,9 @@ require("dotenv").config();
 
 router.get('/google',
 
-  passport.authenticate('google', { scope: ['profile', 'email', 'https://www.googleapis.com/auth/spreadsheets'] })
+  passport.authenticate('google', { scope: ['profile', 'email', 'https://www.googleapis.com/auth/spreadsheets'], accessType: "offline",
+    approvalPrompt: "force"
+})
 );
 
 /* JWT */
@@ -19,18 +21,14 @@ router.get('/google/callback',
     
     //Generate JWT token
     const playload = {
-      id: req.user._id
+      _id: req.user._id
     };
 
-    const jwtToken = jwt.sign( playload, process.env.JWT_SECRET, {expiresIn:"2h"} );
+    const jwtToken = jwt.sign( playload, process.env.JWT_SECRET);
+    // We'll send a JWT token
 
     res.status(200).json({ message: 'Authentication successful', token: jwtToken });
   }
 );
-
-router.get('/logout', (req, res) => {
-  req.logout();
-  res.status(200).json({ message: 'Logged out successfully' });
-});
 
 module.exports = router;

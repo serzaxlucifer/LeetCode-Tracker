@@ -1,26 +1,27 @@
-const express = require('express');
 const mongoose = require('mongoose');
-const auth = require('../middleware/auth');
-const User = mongoose.model('User');
-const Problem = mongoose.model('Problem');
-const Submission = mongoose.model('Submission');
+const User = require('../models/User'); 
+const Submission = require('../models/Submissions'); 
+const Problem = require('../models/Problem'); 
 const {addToSpreadsheet} = require("../services/sheets");
-const config = require('./config/mongoViewConfig');
+const config = require('../config/mongoViewConfig');
 
 // Handles updating and new additions.
 exports.submit = async (req, res) => {
     const { leetcode_username, problem_id, problem_link, problemName, problem_topic, code, learning, markForRevisit } = req.body;
     
     // Check if the leetcode username matches the user's stored username
-    if (req.user.leetcodeUsername !== leetcode_username) 
+    
+    let found = false;
+    if (req.user.leetcodeId !== leetcode_username) 
     {
         return res.status(400).send('You are not authorized to do this. Make sure you are logged into your correct leetcode account! If you are logged into the account attached with the tracker profile and still encountering this issue, please contact the developer as soon as possible. Since, this application is made independently of LeetCode, we use sly and tricky ways to get hold of your leetcode ID. It is possible that LeetCode may have changed a few things on their website internals and we may have to update our own ways accordingly.');
     }
-
-    let found = false;
-    let submission = await Submission.findOne({ userId: req.user._id, problemId: problem_id });
+    const u = req.user._id;
+        
+    try {
+    let submission = await Submission.findOne({ userId: u, problemId: problem_id });
     
-    if (req.user.saveToDB) 
+    if (req.user.storeToDB) 
     {
         if (submission) 
         {
@@ -34,22 +35,21 @@ exports.submit = async (req, res) => {
             submission.code = code;
             submission.markForRevisit = markForRevisit;
             submission.problemTopic = problem_topic;
-            submission.submissionDate = Date.now;
             await submission.save();
 
         } else {
+            console.log("Creating new submission");
             submission = new Submission({
-            userId: req.user._id,
+            userId: u,
             problemId: problem_id,
             problemName: problemName,
             learning: learning,
             code: code,
             markForRevisit: markForRevisit,
             problemTopic: problem_topic,
-            submissionDate : Date.now
             });
 
-            if(markForReview >= 1)
+            if(markForRevisit >= 1)
             {
                 config.setChangesDetected(true);
             }
@@ -67,6 +67,7 @@ exports.submit = async (req, res) => {
         if (problem) {
             problem.submissions += 1;
             if (markForRevisit) {
+            config.setChangesDetected(true);
             problem.markForRevisit += 1;
             }
             await problem.save();
@@ -82,45 +83,64 @@ exports.submit = async (req, res) => {
         }
     }
 
-    
+
     // Save to Spreadsheet!
     // Prepare data to upload
-    const data = { markForRevisit : markForRevisit, problemName: (problem_id + ". " + problemName), learning: learning, code: code, problemLink : problem_link}
-    const SID = req.user.spreadSheetID;
+
+    const data = { markForRevisit : markForRevisit, problemName: (problem_id + ". " + problemName), learning: learning, code: code, problemLink : problem_link};
+    console.log(data);
+    const SID = req.user.spreadSheetId;
+    console.log(SID);
     
-    const rID = await addToSpreadsheet(SID, problem_topic, data, req.user._id, (found ? submission.rowID : -1));      // Add Error handling.
-    submission.rowID = rID;
+    const rID = await addToSpreadsheet(SID, problem_topic, data, req, (found ? submission.rowNum : -1));      // Add Error handling.
+    submission.rowNum = rID;
     await submission.save();
+
+    return res.status(200).json({message: "Success"});
+
+}
+
+catch(err)
+{
+    return res.status(500).json({message: err.message});
+}
         
-    res.send.status(200)('Submission processed');
 };
 
 exports.retrieveSubmission = async (req, res) => {
     const { leetcode_username, problem_id } = req.body;
     
     // Check if the leetcode username matches the user's stored username
-    if (req.user.leetcodeUsername !== leetcode_username) 
+    if (req.user.leetcodeId !== leetcode_username) 
     {
         return res.status(400).send('You are not authorized to do this. Make sure you are logged into your correct leetcode account! If you are logged into the account attached with the tracker profile and still encountering this issue, please contact the developer as soon as possible. Since, this application is made independently of LeetCode, we use sly and tricky ways to get hold of your leetcode ID. It is possible that LeetCode may have changed a few things on their website internals and we may have to update our own ways accordingly.');
     }
 
-    let found = false;
-    let submission = await Submission.findOne({ userId: req.user._id, problemId: problem_id });
-    
-    if (req.user.saveToDB) 
-    {
-        if (submission) 
-        {
-            found = true;
-        }
-    }
+    console.log("ProblemID: ", problem_id);
 
-    if(found)
-    {
-        res.send.status(200).json({ message: "FOUND", submission: submission});
-    }
-    else
-    {
-        res.send.status(201)({ message: "NOT FOUND", submission: ""});
-    }
+    let found = false;
+    try{
+    let submission = await Submission.findOne({ userId: req.user._id, problemId: problem_id });
+    if (req.user.storeToDB) 
+        {
+            if (submission) 
+            {
+                found = true;
+            }
+        }
+    
+        if(found)
+        {
+            return res.status(200).json({ message: "FOUND", submission: submission});
+        }
+        else
+        {
+            return res.status(201)({ message: "NOT FOUND", submission: ""});
+        }    
+
+}
+catch(err)
+{
+    return res.status(500).json({message: err.message});
+}
 };
