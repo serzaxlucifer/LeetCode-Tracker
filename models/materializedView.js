@@ -14,4 +14,4 @@ const materializedViewSchema = new Schema({
   submissions: Number
 }); 
 
-const MaterializedView = mongoose.model('MaterializedView', materializedViewSchema);
+module.exports= mongoose.model('MaterializedView', materializedViewSchema);

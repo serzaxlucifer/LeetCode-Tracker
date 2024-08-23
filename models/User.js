@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema( {
     },
     firstName: String,
     lastName: String,
-    expiryDate: Date,
+    expiryDate: Number,
     accessToken: String,
     refreshToken: String,
     storeToDB: {

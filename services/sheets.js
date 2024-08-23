@@ -2,11 +2,12 @@ const { google } = require('googleapis');
 const {topics} = require("../data/data");
 const User = require('../models/User'); // Adjust the path as necessary
 
-async function authenticate(userId) 
+async function authenticate(req) 
 {
     console.log("Inside authenticate");
-    const token = await User.findById(userId);
+    const token = req.user;
     console.log(token);
+    const id = token._id;
   
     if (!token) {
         throw new Error('No tokens found for this user');
@@ -17,22 +18,29 @@ async function authenticate(userId)
         process.env.GOOGLE_CLIENT_SECRET,
         process.env.GOOGLE_REDIRECT_URI
     );
+
+    console.log("oauth setup!");
+    console.log(token.accessToken);
+    console.log(token.refreshToken);
   
     oAuth2Client.setCredentials({
         access_token: token.accessToken,
         refresh_token: token.refreshToken,
         expiry_date: token.expiryDate
     });
+
+    console.log("credentials set");
   
     if (oAuth2Client.isTokenExpiring()) 
     {
+      console.log("Expired");
         const refreshedTokens = await oAuth2Client.refreshAccessToken();
         const { credentials } = refreshedTokens;
         oAuth2Client.setCredentials(credentials);
     
         // Save updated tokens to the database
 
-        await User.updateOne({ userId }, {
+        await User.updateOne({ id }, {
             accessToken: credentials.access_token,
             refreshToken: credentials.refresh_token,
             expiryDate: credentials.expiry_date
@@ -43,20 +51,22 @@ async function authenticate(userId)
 }
   
 
-async function createSpreadsheet(title, uid) 
+async function createSpreadsheet(title, req) 
 {
-    console.log("Inside createSpreadsheet, with uid ", uid);
-    const auth = await authenticate(uid);
+    const auth = await authenticate(req);
+
+    console.log("Back to Creation");
     const sheets = google.sheets({ version: 'v4', auth });
+    console.log("Sheet Created");
   
     const resource = {
       properties: {
-        title,
+        title: title,
       },
     };
   
     const response = await sheets.spreadsheets.create({
-      resource,
+      resource: resource,
       fields: 'spreadsheetId',
     });
 
@@ -278,20 +288,24 @@ async function createSpreadsheet(title, uid)
   }
   
 
-async function addToSpreadsheet(spreadsheetId, sheetName, data, uid, rID=-1)   // Help in doing stuff with Google Sheets.
+async function addToSpreadsheet(spreadsheetId, sheetName, data, req, rID=-1)   // Help in doing stuff with Google Sheets.
 {
-    const auth = await authenticate(uid);
+    const auth = await authenticate(req);
+    console.log(auth);
     const sheets = google.sheets({ version: 'v4', auth });
+    console.log(sheets);
   
 
     let writePointer = 0;
     
     if(rID === -1)
     {
+      console.log("Finding");
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId,
             range: `${sheetName}!A1`,
           });
+          console.log("Found");
         writePointer = parseInt(response.data.values[0][0], 10) || 4;   // Write in Row 4.
     }
     else
@@ -379,28 +393,42 @@ async function addToSpreadsheet(spreadsheetId, sheetName, data, uid, rID=-1)   /
                   },
                   fields: 'userEnteredValue',
                 }
-            }
+            },
+            {
+              repeatCell: {
+                range: {
+                  sheetId: sheetId,
+                  startRowIndex: writePointer - 1,  // Adjust for zero-based index
+                  endRowIndex: writePointer,
+                  startColumnIndex: 3,  // 4th column is index 3 (0-based index)
+                  endColumnIndex: 4,
+                },
+                cell: {
+                  userEnteredFormat: {
+                    wrapStrategy: 'WRAP',  // Enable word wrap
+                  },
+                },
+                fields: 'userEnteredFormat.wrapStrategy',
+              },
+            },
           ],
         },
       });
       
-    if(rID !== -1)
+    if(rID === -1)
     {
         // Update the write pointer
-        writePointer += 1;
         await sheets.spreadsheets.values.update({
             spreadsheetId,
             range: `${sheetName}!A1`,
             valueInputOption: 'RAW',
             resource: {
-                values: [[writePointer]],
+                values: [[writePointer+1]],
             },
         });
     }
 
     return writePointer;
 }
-
-
   
 module.exports = { createSpreadsheet, addToSpreadsheet };

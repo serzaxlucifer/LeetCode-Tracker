@@ -7,6 +7,7 @@ const passport = require('passport');
 const config = require('./config/mongoViewConfig');
 const { recreateMaterializedView } = require('./services/materializedViews'); 
 const { connect } = require('./config/database'); // Import the connect function from database.js
+const cors = require("cors");
 require('dotenv').config({ path: './server/.env' }); // Specify the path to the .env file
 require('./services/passport'); 
 
@@ -14,8 +15,9 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-connect(); 
+app.use(cors());
 
+connect(); 
 const checkForChanges = async () => 
 {
     if (config.getChangesDetected()) 
@@ -30,18 +32,19 @@ const checkForChanges = async () =>
     }
 };
 
-setInterval(checkForChanges, 30 * 60 * 1000); // 30 minutes
+setInterval(checkForChanges, 60 * 1000); // 30 minutes
 
-/*app.use(session({
+app.use(session({
     secret: process.env.SESSION_SECRET, // Secret key for signing session cookies
     resave: false,
     saveUninitialized: false,
     cookie: { secure: process.env.NODE_ENV === 'production' }, // Set secure flag in production
-}));*/
+}));
 
 
 app.use(passport.initialize());
 app.use(passport.session());
+
 app.use('/auth', authRoutes);
 app.use('/submissions', Submissions);
 app.use('/dashboard', Dashboard);

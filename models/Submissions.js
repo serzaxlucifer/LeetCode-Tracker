@@ -3,7 +3,7 @@ const { Schema } = mongoose;
 
 const submissionSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: 'User' },
-  problemId: {type: String},
+  problemId: {type: Number},
   problemName: String,
   learning: String,
   code: String,
@@ -13,4 +13,4 @@ const submissionSchema = new Schema({
   rowNum: Number
 });
 
-mongoose.model('Submission', submissionSchema);
+module.exports = mongoose.model('Submission', submissionSchema);
