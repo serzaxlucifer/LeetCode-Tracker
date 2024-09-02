@@ -1,8 +1,6 @@
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { RiEditBoxLine } from "react-icons/ri"
 import { useNavigate } from 'react-router-dom';
-import IconBtn from '../../common/IconBtn';
 import  CButton from "../homepage/CButton";
 import  Profile from "./Profile";
 import  Stats from "./Stats";

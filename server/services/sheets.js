@@ -4,9 +4,7 @@ const User = require('../models/User'); // Adjust the path as necessary
 
 async function authenticate(req) 
 {
-    console.log("Inside authenticate");
     const token = req.user;
-    console.log(token);
     const id = token._id;
   
     if (!token) {
@@ -18,22 +16,15 @@ async function authenticate(req)
         process.env.GOOGLE_CLIENT_SECRET,
         process.env.GOOGLE_REDIRECT_URI
     );
-
-    console.log("oauth setup!");
-    console.log(token.accessToken);
-    console.log(token.refreshToken);
   
     oAuth2Client.setCredentials({
         access_token: token.accessToken,
         refresh_token: token.refreshToken,
         expiry_date: token.expiryDate
     });
-
-    console.log("credentials set");
   
     if (oAuth2Client.isTokenExpiring()) 
     {
-      console.log("Expired");
         const refreshedTokens = await oAuth2Client.refreshAccessToken();
         const { credentials } = refreshedTokens;
         oAuth2Client.setCredentials(credentials);
@@ -54,10 +45,7 @@ async function authenticate(req)
 async function createSpreadsheet(title, req) 
 {
     const auth = await authenticate(req);
-
-    console.log("Back to Creation");
     const sheets = google.sheets({ version: 'v4', auth });
-    console.log("Sheet Created");
   
     const resource = {
       properties: {
@@ -94,14 +82,10 @@ async function createSpreadsheet(title, req)
       });
   
     const shee = newresponse.data.sheets;
-    console.log(shee);
-    console.log(topics);
   
     // Update each sheet with initial values and formatting
     const requests = topics.map(topic => {
-        console.log(topic);
         const she = shee.find(s => s.properties.title === topic).properties.sheetId;
-        console.log(she);
 
         return [
             // Set initial value in A1
@@ -274,8 +258,6 @@ async function createSpreadsheet(title, req)
         },
         ];
     }).flat();
-
-    console.log("Invoking Final Change Handler");
   
     await sheets.spreadsheets.batchUpdate({
         spreadsheetId,
@@ -285,38 +267,112 @@ async function createSpreadsheet(title, req)
     });
   
     return spreadsheetId;
-  }
+}
   
 
-async function addToSpreadsheet(spreadsheetId, sheetName, data, req, rID=-1)   // Help in doing stuff with Google Sheets.
+async function addToSpreadsheet(spreadsheetId, sheetName, data, req, rID, mode, oldProb="")   // Help in doing stuff with Google Sheets.
 {
     const auth = await authenticate(req);
-    console.log(auth);
     const sheets = google.sheets({ version: 'v4', auth });
-    console.log(sheets);
-  
 
     let writePointer = 0;
     
-    if(rID === -1)
+      const response = await sheets.spreadsheets.values.get({
+          spreadsheetId,
+          range: `${sheetName}!A1`,
+        });
+
+        const output = response.data.values[0][0] || "4";   // Write in Row 4.
+        const integerArray = output.split(',').map(item => item.trim()); 
+
+    if(mode !== 1)
     {
-      console.log("Finding");
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId,
-            range: `${sheetName}!A1`,
-          });
-          console.log("Found");
-        writePointer = parseInt(response.data.values[0][0], 10) || 4;   // Write in Row 4.
+      writePointer = +integerArray[0];
     }
     else
     {
+      if(rID !== -1) {
         writePointer = rID;
+      }
+
+      else {
+        writePointer = +integerArray[0];
+      }
+    }
+
+    const newresponse = await sheets.spreadsheets.get({
+      spreadsheetId: spreadsheetId,
+    });
+    const shee = newresponse.data.sheets;
+
+
+    if(mode === 2)      // remove row with rID.
+    {
+      const response = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: `${oldProb}!A1`,
+      });
+      const sheetId = shee.find(s => s.properties.title === oldProb).properties.sheetId;
+      const newRes = rID + ", " + response.data.values[0][0];   // mark row as free.
+
+      const requests = [
+        // Clear cell values
+        {
+          updateCells: {
+            range: {
+              sheetId: sheetId,
+              startRowIndex: rID - 1, // Zero-based index
+              endRowIndex: rID,
+            },
+            fields: 'userEnteredValue' // Clear contents only
+          }
+        },
+        // Clear formatting
+        {
+          updateCells: {
+            range: {
+              sheetId: sheetId,
+              startRowIndex: rID - 1, // Zero-based index
+              endRowIndex: rID,
+            },
+            fields: 'userEnteredFormat' // Clear formatting
+          }
+        },
+        {
+          updateCells: {
+            range: {
+              sheetId: sheetId,
+              startRowIndex: 0,
+              endRowIndex: 1,
+              startColumnIndex: 0, 
+              endColumnIndex: 1 
+            },
+            rows: [{
+              values: [{
+                userEnteredValue: { stringValue: newRes }
+              }]
+            }],
+            fields: 'userEnteredValue' // Update cell value
+          }
+        }
+      ];
+
+      const batchUpdateRequest = { requests };
+
+      try {
+          sheets.spreadsheets.batchUpdate({
+          spreadsheetId: spreadsheetId,
+          resource: batchUpdateRequest
+        });
+      } catch (err) {
+        console.error('Error clearing the row:', err);
+      }
     }
 
     const colorMap = {
         YES: {backgroundColor: {red: 1, green: 0, blue: 0}, textFormat: {foregroundColor: {red: 1, green: 1, blue: 1}, bold: true}},  // RED
-        NO: {backgroundColor: {green: 1, red: 0, blue: 0}, textFormat: {foregroundColor: {red: 1, green: 1, blue: 1}, bold: true}},  // GREEN
-        SPECIAL: {backgroundColor: {yellow: 1, red: 0, blue: 0}, textFormat: {foregroundColor: {red: 1, green: 1, blue: 1}, bold: true}}  // YELLOW
+        NO: {backgroundColor: {green: 0.69, red: 0, blue: 0.3137}, textFormat: {foregroundColor: {red: 1, green: 1, blue: 1}, bold: true}},  // GREEN
+        SPECIAL: {backgroundColor: {green: 0.6, red: 1, blue: 0}, textFormat: {foregroundColor: {red: 1, green: 1, blue: 1}, bold: true}}  // YELLOW
       };
     
     
@@ -333,16 +389,12 @@ async function addToSpreadsheet(spreadsheetId, sheetName, data, req, rID=-1)   /
       },
     });
 
-    const newresponse = await sheets.spreadsheets.get({
-        spreadsheetId: spreadsheetId,
-    });
+    const sheetId = shee.find(s => s.properties.title === sheetName).properties.sheetId;
   
-    const shee = newresponse.data.sheets;
     const link = data.problemLink;
 
     const markForRevisitValue = rowData[0];
     const format = colorMap[markForRevisitValue] || {};
-    const sheetId = shee.find(s => s.properties.title === sheetName).properties.sheetId;
 
     await sheets.spreadsheets.batchUpdate({
         spreadsheetId,
@@ -414,16 +466,25 @@ async function addToSpreadsheet(spreadsheetId, sheetName, data, req, rID=-1)   /
           ],
         },
       });
+
       
-    if(rID === -1)
+    if(mode !== 1 || rID === -1)
     {
-        // Update the write pointer
+        let newPointer = 0;
+        if(integerArray.length === 1)
+        {
+          newPointer = (parseInt(integerArray[0], 10) + 1).toString();
+        }
+        else
+        {
+          newPointer = integerArray.slice(1).join(', ');;
+        }
         await sheets.spreadsheets.values.update({
             spreadsheetId,
             range: `${sheetName}!A1`,
             valueInputOption: 'RAW',
             resource: {
-                values: [[writePointer+1]],
+                values: [[newPointer]],
             },
         });
     }

@@ -1,14 +1,11 @@
-import CButton from '../homepage/CButton'
+
 import React, { useState, useEffect } from 'react'
-import PersonalDataUploader from './Settings/PersonalDataUploader'
-import AccountDeleter from './Settings/AccountDeleter'
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import {
     MaterialReactTable,
     useMaterialReactTable,
   } from 'material-react-table';
-  import {FcDocument} from 'react-icons/fc';
   import { getCommunity } from "../../../services/operation/statisticsAPI";
 
 const ComStats = () => {

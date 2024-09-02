@@ -10,49 +10,47 @@ const MaterializedView = require('../models/materializedView');
 exports.DBchange = async (req, res) => 
     {
         
-        // try{
-            //let STORE_TO_DB = req.user.storeToDB;
-        //     const {SAVE_TO_DB} = req.body;
-        // if(SAVE_TO_DB === "1")
-        // {
-        //     STORE_TO_DB = true;
-        // }
-        // else
-        // {
-        //     STORE_TO_DB = false;
-        // }
-        //     const original = req.user.storeToDB;
-        //     req.user.storeToDB = STORE_TO_DB;
+        try{
+            let STORE_TO_DB = req.user.storeToDB;
+            const {SAVE_TO_DB} = req.body;
+            if(SAVE_TO_DB === "1")
+            {
+                STORE_TO_DB = true;
+            }
+            else
+            {
+                STORE_TO_DB = false;
+            }
+            const original = req.user.storeToDB;
+            req.user.storeToDB = STORE_TO_DB;
 
-        //     if(original === false && STORE_TO_DB === true)
-        //     {
-        //         console.log("Writing a new Spreadsheet");
-        //         const sid = await createSpreadsheet("LeetCode Tracker", req);
-        //         req.user.spreadSheetId = sid;
-        //         await req.user.save();
+            if(original === false && STORE_TO_DB === true)
+            {
+                const sid = await createSpreadsheet("LeetCode Tracker", req);
+                req.user.spreadSheetId = sid;
+                await req.user.save();
 
-        //     }
-        //     else if(original === true && STORE_TO_DB === false)
-        //     {
-        //         // Change rowIds to -1
-        //         await Submission.updateMany({ userId: req.user._id }, { $set: { rowNum: -1 } })
-        //     }
+            }
+            else if(original === true && STORE_TO_DB === false)
+            {
+                // Change rowIds to -1
+                await Submission.updateMany({ userId: req.user._id }, { $set: { rowNum: -1 } })
+            }
         
-        //     await req.user.save();
-        // }
+            await req.user.save();
+        }
 
-        // catch (err) 
-        // {
-        //     console.error(req.user._id, " (DBChange):  ", err);
-        //     return res.status(500).json({ message: "An error occurred", error: err.message });
-        // }
+        catch (err) 
+        {
+            console.error(req.user._id, " (DBChange):  ", err);
+            return res.status(500).json({ message: "An error occurred", error: err.message });
+        }
         return res.status(200).json({ message: "Success" });
     };
 
 exports.updateProfile = async (req, res) => 
 {
     const {firstName="", lastName="", leetcodeId="", displayName=""} = req.body;
-    console.log(req.body);
 
     if(firstName)
     {
@@ -162,7 +160,7 @@ exports.deleteProfile = async (req, res) => {
     } catch (err) {
         await session.abortTransaction();
         session.endSession();
-        console.error(err);
+        console.error("DELETE , ", req.user._id, "  , ", err);
         return res.status(500).json({ message: "An error occurred", error: err.message });
     }
     return res.status(200).json({ message: "Success"});
@@ -231,7 +229,7 @@ exports.getRevision = async (req, res) => {
 
 exports.getRevisionTopic = async (req, res) => {
     try {
-        const {problemTopic} = req.body;
+        const problemTopic = req.query.problemTopic;
 
         const result = await Submission.aggregate([
             {

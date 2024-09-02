@@ -11,8 +11,6 @@ const recreateMaterializedView = async () =>
 
     await MaterializedView.deleteMany({});
     await MaterializedView.insertMany(results);
-
-    console.log('Materialized view recreated.');
 };
 
 module.exports = { recreateMaterializedView };

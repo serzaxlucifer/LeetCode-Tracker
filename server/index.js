@@ -38,7 +38,7 @@ const checkForChanges = async () =>
     }
 };
 
-setInterval(checkForChanges, 30* 60 * 1000); // 30 minutes
+setInterval(checkForChanges, 60 * 1000); // 30 minutes
 
 app.use(session({
     secret: process.env.SESSION_SECRET, // Secret key for signing session cookies

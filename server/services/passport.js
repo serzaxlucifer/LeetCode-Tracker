@@ -1,13 +1,10 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const {createSpreadsheet} = require('./sheets');
-
 require('dotenv').config();
-
 const User = require('../models/User'); // Adjust the path as necessary
 
 passport.serializeUser((user, done) => {
-  console.log("Serializing User");
   done(null, user._id.toString());
 } );
 
@@ -30,18 +27,10 @@ passport.use(new GoogleStrategy({
 
 }, async (accessToken, refreshToken, expiry, profile, done) => {
   try {
-    console.log("Back to Passport");
-    console.log("AccessToken ", accessToken);
-    console.log("RefreshToken, ", refreshToken);
-    console.log("Profile ", profile);
-
     let user = await User.findOne({ email: profile.emails[0].value });
-
-    console.log("User ", user);
 
     if (!user) {
       // insert spreadsheet!
-      console.log("Creating user!");
       
       user = await new User({
         email: profile.emails[0].value,
@@ -55,14 +44,10 @@ passport.use(new GoogleStrategy({
       
       const req = {user: user};
       const sid = await createSpreadsheet("LeetCode Tracker", req);
-      console.log(sid);
 
       user.spreadSheetId = sid;
       await user.save();
-      console.log("SID updated!");
     }
-
-    console.log("Calling Done");
 
     done(null, user);
   } catch (err) {

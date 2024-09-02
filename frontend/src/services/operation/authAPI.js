@@ -18,7 +18,7 @@ export function login(navigate) {
     );
 
     const intervalDuration = 1000; // 1 second
-    const timeoutDuration = 15000; // 15 seconds
+    const timeoutDuration = 60000; // 15 seconds
 
     let elapsed = 0;
     const intervalId = setInterval(() => {

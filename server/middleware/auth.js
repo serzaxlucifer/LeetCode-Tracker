@@ -1,18 +1,11 @@
-const mongoose = require('mongoose');
+
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
-const { ObjectId } = require('mongoose').Types;
 
 module.exports = async (req, res, next) => 
 {
-  console.log("INSIDE AUTH");
   try{
-    console.log("INSIDE AUTH");
-    //Extracting token
     const token = req.header("Authorization")?.replace("Bearer ", "") || req.cookies?.token || req.body?.token;
-    console.log("TOKEN: ", token);
-
-    //Checking presence of token
     if(!token)
     {
       return res.status(401).json({
@@ -28,6 +21,8 @@ module.exports = async (req, res, next) =>
         decoded = jwt.verify(token, process.env.JWT_SECRET);
         
     } 
+
+    
     catch(err)
     {
       return res.status(401).json({
@@ -36,18 +31,19 @@ module.exports = async (req, res, next) =>
         });
     }
 
+
     let user = await User.findById(decoded._id);
     if(!user)
     {
         return res.status(400).json({message: "USER NOT FOUND!"});
     }
     req.user = user;
+
     next();
 
   } 
   catch(err)
   {
-    console.log(err.message);
     return res.status(500).json({
       success:false,
       message: "Error while Authorization!"

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+
 const User = require('../models/User'); 
 const Submission = require('../models/Submissions'); 
 const Problem = require('../models/Problem'); 
@@ -8,119 +8,136 @@ const config = require('../config/mongoViewConfig');
 // Handles updating and new additions.
 exports.submit = async (req, res) => {
     const { leetcode_username, problem_id, problem_link, problemName, problem_topic, code, learning, markForRevisit } = req.body;
-    
-    // Check if the leetcode username matches the user's stored username
-    
-    let found = false;
+
     if (req.user.leetcodeId !== leetcode_username) 
     {
-        return res.status(400).send('You are not authorized to do this. Make sure you are logged into your correct leetcode account! If you are logged into the account attached with the tracker profile and still encountering this issue, please contact the developer as soon as possible. Since, this application is made independently of LeetCode, we use sly and tricky ways to get hold of your leetcode ID. It is possible that LeetCode may have changed a few things on their website internals and we may have to update our own ways accordingly.');
+        return res.status(400).json({status: 'AuthFailed', message: 'You are not authorized to do this. Make sure you are logged into your correct leetcode account! If you are logged into the account attached with the tracker profile and still encountering this issue, please contact the developer as soon as possible. Since, this application is made independently of LeetCode, we use sly and tricky ways to get hold of your leetcode ID. It is possible that LeetCode may have changed a few things on their website internals and we may have to update our own ways accordingly.'});
     }
     const u = req.user._id;
-        
-    try {
-    let submission = await Submission.findOne({ userId: u, problemId: problem_id });
-    
-    if (req.user.storeToDB) 
-    {
-        if (submission) 
-        {
-            if(markForRevisit !== submission.markForRevisit)
-            {
-                config.setChangesDetected(true);
-            }
-
-            found = true;
-            submission.learning = learning;
-            submission.code = code;
-            submission.markForRevisit = markForRevisit;
-            submission.problemTopic = problem_topic;
-            await submission.save();
-
-        } else {
-            console.log("Creating new submission");
-            submission = new Submission({
-            userId: u,
-            problemId: problem_id,
-            problemName: problemName,
-            learning: learning,
-            code: code,
-            markForRevisit: markForRevisit,
-            problemTopic: problem_topic,
-            });
-
-            if(markForRevisit >= 1)
-            {
-                config.setChangesDetected(true);
-            }
-            
-            await submission.save();
-            await User.findByIdAndUpdate(
-                req.user._id,
-                { $inc: { totalSubmissions: 1 } }
-            );
-              
-        }
-        
-        // Find or create problem
-        let problem = await Problem.findOne({ problemId: problem_id });
-        if (problem) {
-            problem.submissions += 1;
-            if (markForRevisit) {
-            config.setChangesDetected(true);
-            problem.markForRevisit += 1;
-            }
-            await problem.save();
-        } else {
-            config.setChangesDetected(true);
-            problem = new Problem({
-            problemId: problem_id,
-            problemLink: problem_link,
-            submissions: 1,
-            markForRevisit: markForRevisit ? 1 : 0,
-            });
-            await problem.save();
-        }
-    }
-
-
-    // Save to Spreadsheet!
-    // Prepare data to upload
-
-    const data = { markForRevisit : markForRevisit, problemName: (problem_id + ". " + problemName), learning: learning, code: code, problemLink : problem_link};
-    console.log(data);
+    const data = { markForRevisit : +markForRevisit, problemName: (problem_id + ". " + problemName), learning: learning, code: code, problemLink : problem_link};
     const SID = req.user.spreadSheetId;
-    console.log(SID);
-    
-    const rID = await addToSpreadsheet(SID, problem_topic, data, req, (found ? submission.rowNum : -1));      // Add Error handling.
-    
+
+    let problem = await Problem.findOne({ problemId: problem_id });
+
     if(req.user.storeToDB)
     {
-        submission.rowNum = rID;
-        await submission.save();
+        try {
+            let submission = await Submission.findOne({ userId: u, problemId: problem_id });
+            if(submission)
+            {
+                // First, try to update in the SpreadSheet.
+                let mode = (submission.problemTopic == problem_topic) ? (1) : (2);
+                const row = await updateSpreadsheet(SID, problem_topic, data, req, submission.rowNum, mode, submission.problemTopic);
+
+                if(row !== -1)  // Add to DB.
+                {
+                    if(submission.markForRevisit === 0 && markForRevisit !== 0)
+                    {
+                        problem.markForRevisit++;
+                    }
+                    else if(submission.markForRevisit!== 0 && markForRevisit === 0)
+                    {
+                        problem.markForRevisit--;
+                    }
+                    if(+markForRevisit !== submission.markForRevisit || problem_topic != submission.problemTopic)
+                    {
+                        config.setChangesDetected(true);            // re-create the cached views in next throttling interval.
+                    }
+
+                    problem.save();
+
+                    submission.learning = learning;
+                    submission.code = code;
+                    submission.markForRevisit = +markForRevisit;
+                    submission.problemTopic = problem_topic;
+                    submission.rowNum = row;
+                    await submission.save();
+
+
+                }
+            }
+            else
+            {
+                if (problem) 
+                {
+                    problem.submissions += 1;
+                    if (+markForRevisit) 
+                    {
+                        problem.markForRevisit += 1;
+                    }
+                    await problem.save();
+                } else {
+                    problem = new Problem({
+                        problemId: problem_id,
+                        problemName: problemName,
+                        problemLink: problem_link,
+                        submissions: 1,
+                        markForRevisit: +markForRevisit ? 1 : 0,
+                    });
+                    await problem.save();
+                }
+
+                const row = await updateSpreadsheet(SID, problem_topic, data, req, -1, 0);
+
+                if(row !== -1)  // Add to DB.
+                {
+                    submission = new Submission({
+                        userId: u,
+                        problemId: problem_id,
+                        problemName: problemName,
+                        learning: learning,
+                        code: code,
+                        markForRevisit: +markForRevisit,
+                        problemTopic: problem_topic,
+                        rowNum: row
+                    });
+                        
+                    await submission.save();
+                    await User.findByIdAndUpdate(
+                        req.user._id,
+                        { $inc: { totalSubmissions: 1 } }
+                    );
+
+                    if(+markForRevisit !== 0)
+                    {
+                        config.setChangesDetected(true);            // re-create the cached views in next throttling interval.
+                    }
+                }
+            }
+        }
+        catch (err) {
+            return res.status(500).json({message: err.message});
+        }
+    }
+    else
+    {
+        await updateSpreadsheet(SID, problem_topic, data, req, -1, 0);
     }
 
     return res.status(200).json({message: "Success"});
-
-}
-
-catch(err)
-{
-    return res.status(500).json({message: err.message});
-}
         
 };
 
+async function updateSpreadsheet(SID, problem_topic, data, req, row, mode, o="")
+{
+    try {
+        const rID = await addToSpreadsheet(SID, problem_topic, data, req, row, mode, o); 
+        return rID;
+    }
+    catch(err) {
+        return -1;
+    }
+}
+
 exports.retrieveSubmission = async (req, res) => {
-    const { leetcode_username, problem_id } = req.body;
+    const leetcode_username = req.query.leetcode_username;
+    const problem_id = +req.query.problem_id;
     
     // Check if the leetcode username matches the user's stored username
     if (req.user.leetcodeId !== leetcode_username) 
     {
         return res.status(400).send('You are not authorized to do this. Make sure you are logged into your correct leetcode account! If you are logged into the account attached with the tracker profile and still encountering this issue, please contact the developer as soon as possible. Since, this application is made independently of LeetCode, we use sly and tricky ways to get hold of your leetcode ID. It is possible that LeetCode may have changed a few things on their website internals and we may have to update our own ways accordingly.');
     }
-
-    console.log("ProblemID: ", problem_id);
 
     let found = false;
     try{
@@ -135,6 +152,7 @@ exports.retrieveSubmission = async (req, res) => {
     
         if(found)
         {
+            submission.code = submission.code.replaceAll('\\n', '\n');
             return res.status(200).json({ message: "FOUND", submission: submission});
         }
         else

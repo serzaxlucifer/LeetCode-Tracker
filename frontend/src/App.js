@@ -41,7 +41,8 @@ function App()
       const decodedToken = await jwtDecode(token)
       if(decodedToken !== userData){
         setUserData(decodedToken)
-        dispatch(setUserReal(decodedToken))
+        console.log(decodedToken);
+        //dispatch(setUserReal(decodedToken))
       }
     }
     if(token){
