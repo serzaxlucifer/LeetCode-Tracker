@@ -12,13 +12,13 @@ router.get('/google',
 );
 
 /* JWT */
-//Create a playload
+// Create a playload
 
 router.get('/google/callback',
   passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
     
-    //Generate JWT token
+    // Generate JWT token
     const playload = {
       _id: req.user._id
     };
@@ -44,6 +44,7 @@ router.get('/google/callback',
           </head>
           <body>
               <p>Authentication complete. You can close this window.</p>
+              <script> console.log(window);</script>
           </body>
           </html>
     `);
