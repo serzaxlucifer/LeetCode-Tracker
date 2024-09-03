@@ -32,7 +32,7 @@ router.get('/google/callback',
       httpOnly: false,  // Prevents access via JavaScript
       secure: true,     // Ensures cookie is sent only over HTTPS
       sameSite: 'None', // Allows cross-origin requests
-      domain: process.env.DOMAIN
+      domain: "leetcode-tracker.pages.dev"
     });
     res.send(`
         <!DOCTYPE html>
