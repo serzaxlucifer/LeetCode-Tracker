@@ -17,19 +17,6 @@ export function login(navigate) {
       'width=500,height=600'
     );
 
-    const handleMessage = (event) => {
-      if (event.data && event.data.token) {
-        const token = event.data.token;
-        console.log('Received token:', token);
-        dispatch(setToken(cookie));
-        localStorage.setItem("token", token);
-      }
-    }
-
-    window.addEventListener('message', handleMessage);
-
-    setTimeout(() => {window.removeEventListener('message', handleMessage);}, 60000);
-
   //   const intervalDuration = 1000; // 1 second
   //   const timeoutDuration = 90000; // 15 seconds
 

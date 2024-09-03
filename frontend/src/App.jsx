@@ -36,6 +36,10 @@ function App()
   const { token } = useSelector((state) => state.auth);
   const [userData, setUserData] = useState(null);
   const dispatch = useDispatch();
+  const location = useLocation();
+
+  // Define the paths where Navbar and Footer should not be shown
+  const hideNavbarAndFooter = location.pathname === '/relay';
 
   useEffect(()=> {
     const setData = async() => {
@@ -56,7 +60,7 @@ function App()
 
   return (
     <div className="w-screen min-h-screen bg-pure-greys-5 flex flex-col font-inter">
-      <Navbar/> 
+      {!hideNavbarAndFooter && <Navbar />}
       <Routes>
         <Route path="/" element={<Home/>} />
         <Route path="/login" element={<Login/>} />
@@ -65,7 +69,7 @@ function App()
         <Route path="/logout"  element={<Logout/>}/>
         <Route path="*" element={<Error />} />
       </Routes>
-      <Footer/>
+      {!hideNavbarAndFooter && <Footer />}
     </div>
   );
 }

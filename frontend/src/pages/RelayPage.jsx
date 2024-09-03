@@ -1,9 +1,12 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { setToken } from "../slices/authSlice";
+import { useDispatch } from 'react-redux';
 
 const RelayPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const getTokenFromUrl = () => {
@@ -15,13 +18,8 @@ const RelayPage = () => {
 
     if (token) {
       // Post the token back to the parent window
-      if (window.opener) {
-        window.opener.postMessage({ token }, '*');
-        // Close the popup window
-        window.close();
-      } else {
-        console.error('No opener window found!');
-      }
+      dispatch(setToken(token));
+      localStorage.setItem("token", token);
     } else {
       console.error('Token not found in URL!');
     }
@@ -31,7 +29,7 @@ const RelayPage = () => {
 
   return (
     <div>
-      <p>Authentication Successfull. You may close this window.</p>
+      <p>Authentication Successful. You may close this window.</p>
     </div>
   );
 };
