@@ -21,7 +21,7 @@ passport.use(new GoogleStrategy({
 
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: '/auth/google/callback',
+  callbackURL: 'https://leetcode-tracker-vavc.onrender.com/auth/google/callback',
   access_type: 'offline',  // This ensures that a refresh token is returned
   prompt: 'consent' ,
 
