@@ -13,6 +13,16 @@ require('./services/passport');
 
 const app = express();
 
+// Force HTTPS in production
+if (process.env.NODE_ENV === 'production') {
+    app.use((req, res, next) => {
+        if (req.headers['x-forwarded-proto'] !== 'https') {
+            return res.redirect(`https://${req.headers.host}${req.url}`);
+        }
+        next();
+    });
+}
+
 app.use((req, res, next) => {
     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
     res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
@@ -38,13 +48,13 @@ const checkForChanges = async () =>
     }
 };
 
-setInterval(checkForChanges, 60 * 1000); // 30 minutes
+setInterval(checkForChanges, 30 * 60 * 1000); // 30 minutes
 
 app.use(session({
     secret: process.env.SESSION_SECRET, // Secret key for signing session cookies
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: process.env.NODE_ENV === 'production' }, // Set secure flag in production
+    cookie: { secure: process.env.NODE_ENV === 'production',  httpOnly: true }, // Set secure flag in production
 }));
 
 
