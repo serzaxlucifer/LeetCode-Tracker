@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { setToken } from "../slices/authSlice";
 import { useDispatch } from 'react-redux';
+import Cookies from 'js-cookie';
 
 const RelayPage = () => {
   const location = useLocation();
@@ -18,6 +19,11 @@ const RelayPage = () => {
 
     if (token) {
       // Post the token back to the parent window
+      Cookies.set('token', token, {
+        expires: 7, 
+        secure: true, 
+        sameSite: 'Lax', 
+      });
       dispatch(setToken(token));
       localStorage.setItem("token", token);
     } else {
