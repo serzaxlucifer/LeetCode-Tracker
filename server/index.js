@@ -2,11 +2,12 @@ const express = require('express');
 const session = require('express-session');
 const Submissions = require("./routes/submissions");
 const Dashboard = require("./routes/dashboard");
+const Ping = require("./routes/ping");
 const authRoutes = require('./routes/auth'); // Auth routes
 const passport = require('passport');
 const config = require('./config/mongoViewConfig');
 const { recreateMaterializedView } = require('./services/materializedViews'); 
-const { connect } = require('./config/database'); // Import the connect function from database.js
+const { connect } = require('./config/database');    // Import the connect function from database.js
 const cors = require("cors");
 require('dotenv').config({ path: './server/.env' }); // Specify the path to the .env file
 require('./services/passport'); 
@@ -64,6 +65,7 @@ app.use(passport.session());
 app.use('/auth', authRoutes);
 app.use('/submissions', Submissions);
 app.use('/dashboard', Dashboard);
+app.use('/ping', Ping);
 
 
 const PORT = process.env.PORT || 5000;
