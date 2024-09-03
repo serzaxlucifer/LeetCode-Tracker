@@ -17,34 +17,47 @@ export function login(navigate) {
       'width=500,height=600'
     );
 
-    const intervalDuration = 1000; // 1 second
-    const timeoutDuration = 90000; // 15 seconds
+    const handleMessage = (event) => {
+      if (event.data && event.data.token) {
+        const token = event.data.token;
+        console.log('Received token:', token);
+        dispatch(setToken(cookie));
+        localStorage.setItem("token", token);
+      }
+    }
 
-    let elapsed = 0;
-    const intervalId = setInterval(() => {
+    window.addEventListener('message', handleMessage);
 
-      let cookie = document.cookie.split('; ').find(row => row.startsWith('token='));
-            if (cookie) {
-                const cookieString = document.cookie;
-                cookie = cookieString.split('; ').find(row => row.startsWith('token='));
-                cookie = cookie.split('=')[1];
-                console.log(cookie);
-                clearInterval(intervalId);
-                dispatch(setToken(cookie));
-                localStorage.setItem("token", JSON.stringify(cookie));
-                navigate("/dashboard");
-                return;
-            }
+    setTimeout(() => {window.removeEventListener('message', handleMessage);}, 60000);
 
-        elapsed += intervalDuration;
+  //   const intervalDuration = 1000; // 1 second
+  //   const timeoutDuration = 90000; // 15 seconds
 
-        if (elapsed >= timeoutDuration) {
-            console.log('Timeout reached. Cookie not found.');
-            clearInterval(intervalId);
-            dispatch(logout(navigate));
-        }
-    }, intervalDuration);
-  };
+  //   let elapsed = 0;
+  //   const intervalId = setInterval(() => {
+
+  //     let cookie = document.cookie.split('; ').find(row => row.startsWith('token='));
+  //           if (cookie) {
+  //               const cookieString = document.cookie;
+  //               cookie = cookieString.split('; ').find(row => row.startsWith('token='));
+  //               cookie = cookie.split('=')[1];
+  //               console.log(cookie);
+  //               clearInterval(intervalId);
+  //               dispatch(setToken(cookie));
+  //               localStorage.setItem("token", JSON.stringify(cookie));
+  //               navigate("/dashboard");
+  //               return;
+  //           }
+
+  //       elapsed += intervalDuration;
+
+  //       if (elapsed >= timeoutDuration) {
+  //           console.log('Timeout reached. Cookie not found.');
+  //           clearInterval(intervalId);
+  //           dispatch(logout(navigate));
+  //       }
+  //   }, intervalDuration);
+   };
 }
 
 export function logout(navigate) {

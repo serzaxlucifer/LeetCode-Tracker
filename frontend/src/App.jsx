@@ -11,6 +11,7 @@ import { jwtDecode } from "jwt-decode";
 import { useEffect, useState } from "react";
 import Login from "./pages/Login"
 import { useNavigate } from 'react-router-dom';
+import RelayPage from "./pages/RelayPage";
 
 const Logout = () => {
     const navigate = useNavigate();
@@ -59,6 +60,7 @@ function App()
       <Routes>
         <Route path="/" element={<Home/>} />
         <Route path="/login" element={<Login/>} />
+        <Route path="/relay" element={<RelayPage />} />
         <Route path="/dashboard" element={<PrivateRoute><Myprofile /></PrivateRoute>}/>
         <Route path="/logout"  element={<Logout/>}/>
         <Route path="*" element={<Error />} />
