@@ -2,7 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom';
 
 
-const BottomFooter = ["Privacy Policy", "Cookie Policy", "Terms"];
+const BottomFooter = ["Check Website Status"];
 
 
 const Footer = () => {
@@ -24,9 +24,9 @@ const Footer = () => {
                         : "border-r border-richblack-700 cursor-pointer hover:text-richblack-50 transition-all duration-200"
                     } px-3 `}
                   >
-                    <Link to={ele.split(" ").join("-").toLocaleLowerCase()}>
+                    <a href="https://stats.uptimerobot.com/5lyXyhxvUI">
                       {ele}
-                    </Link>
+                    </a>
                   </div>
                 );
               })}
