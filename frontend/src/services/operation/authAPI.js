@@ -11,17 +11,18 @@ export function login(navigate) {
     
     localStorage.removeItem("token");
 
-    const authWindow = window.open(
-      LOGIN_API, 
-      '_blank', 
-      'width=500,height=600'
-    );
+    // const authWindow = window.open(
+    //   LOGIN_API, 
+    //   '_blank', 
+    //   'width=500,height=600'
+    // );
 
-    const intervalDuration = 1000; // 1 second
-    const timeoutDuration = 90000; // 15 seconds
+    const authWindow = await apiConnector("GET", LOGIN_API, null, {});
+    // const intervalDuration = 1000; // 1 second
+    // const timeoutDuration = 90000; // 15 seconds
 
-    let elapsed = 0;
-    const intervalId = setInterval(() => {
+    // let elapsed = 0;
+    // const intervalId = setInterval(() => {
 
       let cookie = document.cookie.split('; ').find(row => row.startsWith('token='));
             if (cookie) {
@@ -36,16 +37,16 @@ export function login(navigate) {
                 return;
             }
 
-        elapsed += intervalDuration;
+        // elapsed += intervalDuration;
 
-        if (elapsed >= timeoutDuration) {
-            console.log('Timeout reached. Cookie not found.');
-            clearInterval(intervalId);
-            dispatch(logout(navigate));
-        }
-    }, intervalDuration);
-  };
-}
+  //       if (elapsed >= timeoutDuration) {
+  //           console.log('Timeout reached. Cookie not found.');
+  //           clearInterval(intervalId);
+  //           dispatch(logout(navigate));
+  //       }
+  //   }, intervalDuration);
+  // };
+}}
 
 export function logout(navigate) {
   return (dispatch) => {
