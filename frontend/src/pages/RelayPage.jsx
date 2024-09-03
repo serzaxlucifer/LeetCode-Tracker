@@ -29,7 +29,7 @@ const RelayPage = () => {
 
   return (
     <div>
-      <p>Authentication Successful. You may close this window.</p>
+      <h1>Authentication Successful. You may close this window.</h1>
     </div>
   );
 };
