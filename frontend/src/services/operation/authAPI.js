@@ -13,8 +13,7 @@ export function login(navigate) {
 
     const authWindow = window.open(
       LOGIN_API, 
-      '_blank', 
-      'width=500,height=600'
+      '_blank'
     );
 
   //   const intervalDuration = 1000; // 1 second

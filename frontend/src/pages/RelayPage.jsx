@@ -27,6 +27,7 @@ const RelayPage = () => {
       });
       dispatch(setToken(token));
       localStorage.setItem("token", token);
+      navigate('/');
     } else {
       console.error('Token not found in URL!');
     }
