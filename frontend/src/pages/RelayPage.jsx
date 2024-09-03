@@ -19,6 +19,7 @@ const RelayPage = () => {
 
     if (token) {
       // Post the token back to the parent window
+      console.log("token, ", token);
       Cookies.set('token', token, {
         expires: 7, 
         secure: true, 
