@@ -44,7 +44,8 @@ router.get('/google/callback',
           </head>
           <body>
               <p>Authentication complete. You can close this window.</p>
-              <script> console.log(window);</script>
+              <script> console.log(window); window.opener.postMessage({ token: '${jwtToken}' }, 'https://leetcode-tracker.pages.dev/');
+       </script>
           </body>
           </html>
     `);
