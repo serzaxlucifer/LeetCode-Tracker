@@ -1,5 +1,5 @@
 
-const BASE_URL = import.meta.env.BASE_URL;
+const BASE_URL = "https://leetcode-tracker-vavc.onrender.com"
 
 // AUTH ENDPOINTS
 export const endpoints = 
