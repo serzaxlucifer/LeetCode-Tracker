@@ -12,6 +12,7 @@ const cors = require("cors");
 require('dotenv').config({ path: './server/.env' }); // Specify the path to the .env file
 require('./services/passport'); 
 
+
 const app = express();
 
 // Force HTTPS in production

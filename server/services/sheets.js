@@ -1,6 +1,26 @@
 const { google } = require('googleapis');
 const {topics} = require("../data/data");
 const User = require('../models/User'); // Adjust the path as necessary
+const CryptoJS = require('crypto-js');
+require('dotenv').config();
+
+
+function encryptToken(token) {
+    const ciphertext = CryptoJS.AES.encrypt(token, process.env.AES_SECRET, {
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+    }).toString();
+    return ciphertext;
+}
+
+function decryptToken(encryptedToken) {
+    const bytes = CryptoJS.AES.decrypt(encryptedToken, process.env.AES_SECRET, {
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+    });
+    const originalToken = bytes.toString(CryptoJS.enc.Utf8);
+    return originalToken;
+}
 
 async function authenticate(req) 
 {
@@ -16,10 +36,13 @@ async function authenticate(req)
         process.env.GOOGLE_CLIENT_SECRET,
         process.env.GOOGLE_REDIRECT_URI
     );
+
+    const at = decryptToken(token.accessToken);
+    const rt = decryptToken(token.refreshToken);
   
     oAuth2Client.setCredentials({
-        access_token: token.accessToken,
-        refresh_token: token.refreshToken,
+        access_token: at,
+        refresh_token: rt,
         expiry_date: token.expiryDate
     });
   
@@ -28,12 +51,14 @@ async function authenticate(req)
         const refreshedTokens = await oAuth2Client.refreshAccessToken();
         const { credentials } = refreshedTokens;
         oAuth2Client.setCredentials(credentials);
+        const att = encryptToken(credentials.access_token);
+        const rtt = encryptToken(credentials.refresh_token);
     
         // Save updated tokens to the database
 
         await User.updateOne({ id }, {
-            accessToken: credentials.access_token,
-            refreshToken: credentials.refresh_token,
+            accessToken: att,
+            refreshToken: rtt,
             expiryDate: credentials.expiry_date
         });
     }

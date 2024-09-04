@@ -1,6 +1,7 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const {createSpreadsheet} = require('./sheets');
+const CryptoJS = require('crypto-js');
 require('dotenv').config();
 const User = require('../models/User'); // Adjust the path as necessary
 
@@ -17,6 +18,14 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
+function encryptToken(token) {
+  const ciphertext = CryptoJS.AES.encrypt(token, process.env.AES_SECRET  , {
+      mode: CryptoJS.mode.CBC,
+      padding: CryptoJS.pad.Pkcs7
+  }).toString();
+  return ciphertext;
+}
+
 passport.use(new GoogleStrategy({
 
   clientID: process.env.GOOGLE_CLIENT_ID,
@@ -31,6 +40,9 @@ passport.use(new GoogleStrategy({
 
     if (!user) {
       // insert spreadsheet!
+
+      const encryptedToken = encryptToken(accessToken);
+      const refreshEncToken = encryptToken(refreshToken);
       
       user = await new User({
         email: profile.emails[0].value,
@@ -38,8 +50,8 @@ passport.use(new GoogleStrategy({
         firstName: profile.name.givenName,
         lastName: profile.name.familyName,
         expiryDate: expiry.expires_in,
-        accessToken: accessToken,
-        refreshToken: refreshToken,
+        accessToken: encryptedToken,
+        refreshToken: refreshEncToken,
       }).save();
       
       const req = {user: user};
