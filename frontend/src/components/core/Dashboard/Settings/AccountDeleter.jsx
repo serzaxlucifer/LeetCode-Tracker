@@ -10,8 +10,8 @@ const AccountDeleter = ({ setConfirmationModel }) => {
 	const navigate = useNavigate();
 	async function handleDeleteAccount() {
 		try {
-			//dispatch(deleteProfile(token, navigate));
-			// setConfirmationModel(null)
+			dispatch(deleteProfile(token, navigate));
+			setConfirmationModel(null)
 		} catch (err) {}
 	}
 	return (

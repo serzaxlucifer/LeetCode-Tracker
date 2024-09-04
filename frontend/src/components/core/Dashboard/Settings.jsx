@@ -3,7 +3,6 @@ import PersonalDataUploader from './Settings/PersonalDataUploader'
 import AccountDeleter from './Settings/AccountDeleter'
 
 const Settings = ({setConfirmationModel}) => {
-  console.log("rendering settings");
   return (
     <>
     <div className="mt-8 mb-8">

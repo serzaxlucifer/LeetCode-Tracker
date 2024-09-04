@@ -15,7 +15,6 @@ const ProfileDropDown = () => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   useOnClickOutside(ref, () => setOpen(false));
-  console.log("Printing PROFILE FROP DOWN");
 
   return (
     <button className="relative" onClick={() => setOpen(true)}>

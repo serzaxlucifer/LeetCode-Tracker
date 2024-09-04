@@ -13,8 +13,6 @@ const PersonalDataUploader = () => {
   const {register, handleSubmit, formState: {errors}} = useForm();
   const submitForm = async (formdata) => {
     try{
-      console.log(originalDB);
-      console.log(formdata.storeToDB);
       if(originalDB != formdata.storeToDB)
       {
         console.log("db api called");

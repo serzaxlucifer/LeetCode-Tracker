@@ -19,7 +19,6 @@ const Myprofile = () => {
   const [confirmationModel, setConfirmationModel] = useState(null);
   const [c2, setc2] = useState(null);
   const [ page, setPage ] = useState("1");
-  console.log(page);
 
   useEffect( () => {
     dispatch(getUser(token));

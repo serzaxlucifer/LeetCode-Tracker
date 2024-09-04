@@ -37,12 +37,10 @@ const topics = [
 ]
 
 const Stats = ({ setConfirmationModel }) => {
-  console.log("rendering settings");
   const [topic, setTopic] = useState("ALL");
   const [loading, setLoading] = useState(true);
   const { token } = useSelector((state) => state.auth);
   const [data, setData] = useState([]);
-  console.log("Topic", topic);
 
   const columns = useMemo(
     () => [
@@ -141,13 +139,11 @@ const Stats = ({ setConfirmationModel }) => {
     {
       const temp = await getMyStats(token);
       setData(temp);
-      console.log(data);
     }
     else
     {
       const temp = await getMyStatsTopic(token, topic);
       setData(temp);
-      console.log(data);
     }
     setLoading(false);
   };
