@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "LeetCode Tracker",
+  "version": "1.0",
+  "description": "Chrome extension plug for Leetcode Tracker service.",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://leetcode.com/problemset/*"],
+      "js": ["contentRandom.bundle.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://leetcode.com/problems/*"],
+      "js": ["submissionTab.bundle.js", "contentLogger.bundle.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "host_permissions": ["*://*/*", "http://localhost:5000/*"],
+
+  "options_page": "options.html",
+  "web_accessible_resources": [
+  {
+    "resources": [
+      "content.styles.css",
+      "LTLOGO.png",
+      "sparkles.svg",
+      "chrome-extension://jmgegkadbojmamlkpajabahjadkleccc/051f610785d337c22c0e.png",
+      "051f610785d337c22c0e.png",
+      "chrome-extension://jmgegkadbojmamlkpajabahjadkleccc/683d1c319b415918eac5.svg",
+      "683d1c319b415918eac5.svg",
+      "8c3371346a1ad9fe94b5.png",
+      "chrome-extension://jmgegkadbojmamlkpajabahjadkleccc/8c3371346a1ad9fe94b5.png",
+      "chrome-extension://jmgegkadbojmamlkpajabahjadkleccc/R.png",
+      "R.png",
+      "chrome-extension://jmgegkadbojmamlkpajabahjadkleccc/sword.png",
+      "sword.png"
+    ],
+    "matches": ["<all_urls>"]
+  }]
+}

@@ -1,0 +1,134 @@
+body {
+  background-color: #242424;
+}
+
+.container {
+  color: #ffffff;
+}
+
+
+.popupContainer {
+  font-family: 'gadugi';
+  width: 530px;
+  height: 320px;
+  background-color: #ffffff;
+  border-radius: 15px;
+  color: white;
+  padding: 20px;
+  position: relative;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.popupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+}
+
+.popupLogo {
+  width: 150px;
+  height: auto; /* Auto height ensures aspect ratio is preserved */
+  margin-right: 10px;
+  object-fit: contain; /* Ensures the image is resized to fit within the container while maintaining its aspect ratio */
+}
+
+.boldText {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: black;
+  margin-top: -10px;
+  margin-bottom: 0px;
+}
+
+/* .flexor {
+  display: flex;
+  flex-direction: row;
+} */
+.popupCloseButton {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.popupBody {
+  margin: 0;
+  font-size: 1.1rem;
+  text-align: left; /* Ensures everything is left-aligned */
+  padding-right: 100px; /* Adds space on the right side of the content */
+}
+
+.popupData {
+  display: flex;
+  flex-direction: row;
+}
+
+.problemListt {
+  margin-top: -30px;
+  background-color: white;  /* Set the background to white */
+  color: black;  /* Set the text color to black */
+  font-size: 15px;  /* Make the text smaller */
+    border: 1px solid #ccc;  /* Add a light gray border like default select */
+    border-radius: 4px;  /* Add a slight border-radius for default appearance */
+    width: auto;  /* Adjust the width to fit content */
+}
+
+.sparkle {
+  width: 80px; /* Adjust the size of the sparkles */
+  height: auto; /* Maintain aspect ratio */
+  position: absolute;
+  bottom: 40px; /* Position it near the bottom */
+  right: 25px; /* Position it near the right side */
+}
+
+.highlightBar {
+  width: 100%;
+  height: 20px;
+  background-color: #dab3b3;
+  margin: 10px 0;
+}
+
+.container .popupData .mainText {
+  font-size: 1.7rem;
+  font-weight: bold;
+  margin-top: 10px;
+  color: black !important; /* Use !important as a last resort */
+}
+
+.revisit {
+  color: red;
+}
+
+.popupLink {
+  display: block;
+  font-size: 1.3rem;
+  text-decoration: underline;
+  margin-top: 5px;
+  color: rgb(25, 23, 23);
+}
+
+.topicLabel {
+  font-weight: bold;
+  font-family: 'cascadia code';
+  margin-top: 20px;
+  color: rgb(0, 0, 0);
+}
+
+.topicName {
+  font-weight: normal;
+  font-family: 'cascadia code';
+}
+
+.sparkles {
+  font-size: 1.2rem;
+  margin-top: -0x;
+}
+
+.sparkles span {
+  margin-right: 5px;
+  margin-left: 5px;;
+}

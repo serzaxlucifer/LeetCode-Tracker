@@ -1,0 +1,223 @@
+.App {
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  text-align: center;
+  font-family: 'gadugi';
+  height: 100%;
+  padding: 10px;
+  background-color: white;
+}
+.Hi {
+  width: 100%;
+}
+
+img {
+  height: 60px;
+  width: auto;
+  margin-bottom: -15px;
+}
+
+h1 {
+  color: black;
+}
+
+.p2 {
+  margin-top: -10px;
+}
+
+.p1 {
+  font-family: Arial;
+  margin-bottom: -15px;
+  margin-top:30px;
+}
+
+.p3 {
+  font-family: Arial;
+  margin-bottom: -15px;
+}
+
+@font-face {
+  font-family: 'MyCustomFont';
+  src: url('../assets/gadugi.ttf') format('ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+
+
+.App-logo {
+  height: 30vmin;
+  pointer-events: none;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #333; /* Line color and thickness */
+  width: 90%; /* Line width */
+  margin: 20px auto; /* Center the line */
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.SecondMedia
+{
+  height: 60px;
+  width: auto;
+  margin-left: 80px;
+}
+
+
+
+.SettingsContainer {
+  width: 85%;
+  text-align: left;
+}
+ 
+.Back {
+  width: auto;
+  cursor: pointer;
+  border: 1px solid #333;
+  border-radius: 20px;
+  padding: 5px;
+  padding-right: 8px;
+  padding-top: 2px;
+}
+
+.Head {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: -15px;
+  
+}
+
+.App-header {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: black;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.Sider {
+  margin-right: 20px;
+}
+
+.User {
+  margin-top: -15px;
+}
+
+.Returner {
+  margin-top: 25px;
+}
+
+/*SLIDER CSS*/
+
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.NotSignedIn {
+  margin-top: -30px;
+  margin-bottom: 50px;
+}
+
+h2 {
+  margin-top: -15px;
+}
+
+.Leet {
+  margin-top: 5px;
+  font-size: 12px;
+  color: grey;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+footer {
+  margin-top: 15px;
+  font-size: small;
+  color: grey;
+  cursor: pointer;
+}
+
+.checker1, .checker2 {
+  margin-top: 20px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 13px;
+  width: 13px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(19px);
+  -ms-transform: translateX(19px);
+  transform: translateX(19px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}

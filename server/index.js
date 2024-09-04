@@ -34,7 +34,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
-    origin: 'https://leetcode-tracker.pages.dev',
+    origin: ['https://leetcode.com', 'https://leetcode-tracker.pages.dev'],
     credentials: true,
 }));
 

@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "LeetCode Tracker",
+  "version": "1.0",
+  "description": "Chrome extension plug for Leetcode Tracker service.",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.bundle.js"
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs",
+    "cookies"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://leetcode.com/problemset/*"],
+      "js": ["contentRandom.bundle.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://leetcode.com/problems/*"],
+      "js": ["contentLogger.bundle.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "host_permissions": ["*://*/*", "https://leetcode-tracker-vavc.onrender.com/*", "https://leetcode-tracker.pages.dev/*"],
+
+  "options_page": "options.html",
+  "web_accessible_resources": [
+  {
+    "resources": [
+      "content.styles.css",
+      "LTLOGO.png",
+      "sparkles.svg",
+      "051f610785d337c22c0e.png",
+      "683d1c319b415918eac5.svg",
+      "8c3371346a1ad9fe94b5.png",
+      "R.png",
+      "sword.png",
+      "sparkles.svg"
+    ],
+    "matches": ["<all_urls>"]
+  }]
+}
