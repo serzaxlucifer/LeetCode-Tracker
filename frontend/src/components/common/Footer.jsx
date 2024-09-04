@@ -2,7 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom';
 
 
-const BottomFooter = ["Check Website Status"];
+const BottomFooter = ["Check Website Status", "Privacy Policy"];
 
 
 const Footer = () => {
@@ -14,24 +14,21 @@ const Footer = () => {
           {/* Section 1 */}
           <div className="flex justify-between lg:items-start items-center flex-col lg:flex-row gap-3 w-full">
             <div className="flex flex-row">
-              {BottomFooter.map((ele, i) => {
-                return (
                   <div
-                    key={i}
-                    className={` ${
-                      BottomFooter.length - 1 === i
-                        ? ""
-                        : "border-r border-richblack-700 cursor-pointer hover:text-richblack-50 transition-all duration-200"
-                    } px-3 `}
-                  >
-                    <a href="https://stats.uptimerobot.com/5lyXyhxvUI">
-                      {ele}
-                    </a>
+                    className="border-r border-richblack-700 cursor-pointer hover:text-richblack-50 transition-all duration-200 px-3">
+                    <Link to="/privacy-policy">
+                      Privacy Policy
+                    </Link>
                   </div>
-                );
-              })}
+                  <div
+                  className={`px-3`}
+                >
+                  <a href="https://stats.uptimerobot.com/5lyXyhxvUI">
+                    Check Website Status
+                  </a>
+                </div>
             </div>
-            <div className="text-right">Handcrafted with ❤️ by Mukul Malik © 2024 LeetCode Tracker<br/><strong>PLEASE NOTE: THIS APPLICATION IS NOT ASSOCIATED WITH LEETCODE.</strong></div>
+            <div className="text-right">Handcrafted with ❤️ by <a href="mailto:mukulsinghmalik@gmail.com">Mukul Malik</a> © 2024 LeetCode Tracker<br/><strong>PLEASE NOTE: THIS APPLICATION IS NOT ASSOCIATED WITH LEETCODE.</strong></div>
           </div>
         </div>
       </div>

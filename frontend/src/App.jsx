@@ -10,6 +10,7 @@ import Error from "./pages/Error";
 import { jwtDecode } from "jwt-decode";
 import { useEffect, useState } from "react";
 import Login from "./pages/Login"
+import Privacy from "./pages/Privacy"
 import { useNavigate } from 'react-router-dom';
 import RelayPage from "./pages/RelayPage";
 
@@ -60,6 +61,7 @@ function App()
       <Routes>
         <Route path="/" element={<Home/>} />
         <Route path="/login" element={<Login/>} />
+        <Route path="/privacy-policy" element={<Privacy/>} />
         <Route path="/relay" element={<RelayPage />} />
         <Route path="/dashboard" element={<PrivateRoute><Myprofile /></PrivateRoute>}/>
         <Route path="/logout"  element={<Logout/>}/>
