@@ -23,7 +23,6 @@ router.get('/google/callback',
       _id: req.user._id
     };
 
-    const expires = new Date(Date.now() + 60 * 60 * 1000); // 60 minutes from now
     const jwtToken = jwt.sign( playload, process.env.JWT_SECRET);
 
 

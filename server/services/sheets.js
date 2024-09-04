@@ -4,7 +4,6 @@ const User = require('../models/User'); // Adjust the path as necessary
 const CryptoJS = require('crypto-js');
 require('dotenv').config();
 
-
 function encryptToken(token) {
   console.log(process.env.AES_SECRET);
     const ciphertext = CryptoJS.AES.encrypt(token, process.env.AES_SECRET, {
@@ -28,6 +27,8 @@ async function authenticate(req)
 {
     const token = req.user;
     const id = token._id;
+
+    console.log("Inside Auth");
   
     if (!token) {
         throw new Error('No tokens found for this user');
@@ -41,6 +42,10 @@ async function authenticate(req)
 
     const at = decryptToken(token.accessToken);
     const rt = decryptToken(token.refreshToken);
+    console.log(token.accessToken);
+    console.log(token.refreshToken);
+    console.log(at);
+    console.log(rt);
   
     oAuth2Client.setCredentials({
         access_token: at,
@@ -50,11 +55,17 @@ async function authenticate(req)
   
     if (oAuth2Client.isTokenExpiring()) 
     {
+      console.log("Token Refreshing!");
         const refreshedTokens = await oAuth2Client.refreshAccessToken();
         const { credentials } = refreshedTokens;
         oAuth2Client.setCredentials(credentials);
         const att = encryptToken(credentials.access_token);
         const rtt = encryptToken(credentials.refresh_token);
+
+        console.log(credentials.access_token);
+        console.log(credentials.refresh_token);
+        console.log(att);
+        console.log(rtt);
     
         // Save updated tokens to the database
 
@@ -73,6 +84,7 @@ async function createSpreadsheet(title, req)
 {
     const auth = await authenticate(req);
     const sheets = google.sheets({ version: 'v4', auth });
+    console.log("Creating Spreadsheet");
   
     const resource = {
       properties: {
