@@ -6,6 +6,7 @@ require('dotenv').config();
 
 
 function encryptToken(token) {
+  console.log(process.env.AES_SECRET);
     const ciphertext = CryptoJS.AES.encrypt(token, process.env.AES_SECRET, {
         mode: CryptoJS.mode.CBC,
         padding: CryptoJS.pad.Pkcs7
@@ -14,6 +15,7 @@ function encryptToken(token) {
 }
 
 function decryptToken(encryptedToken) {
+  console.log(process.env.AES_SECRET);
     const bytes = CryptoJS.AES.decrypt(encryptedToken, process.env.AES_SECRET, {
         mode: CryptoJS.mode.CBC,
         padding: CryptoJS.pad.Pkcs7
