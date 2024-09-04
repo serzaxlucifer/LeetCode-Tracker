@@ -26,12 +26,12 @@ const LearningLanguageSection = () => {
 			</div>
 
 			<div className="flex flex-row items-center justify-center w-[65%] md:w-[100%]">
-			
+			<a href="https://drive.google.com/file/d/1lra5YM3j641rnJ9yD0fXZcS_DKCqEsnm/view?usp=sharing">
 			<img
 				src={logo}
 				alt="KnowYourProgressImage"
 				className="object-contain w-1/2 h-auto"
-				/>
+				/></a>
 
 			</div>
 			
