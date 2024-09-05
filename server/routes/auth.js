@@ -6,7 +6,7 @@ const jwt = require( "jsonwebtoken" );
 require("dotenv").config(); 
 
 router.get('/google', 
-  passport.authenticate('google', { scope: ['profile', 'email', 'https://www.googleapis.com/auth/spreadsheets'], accessType: "offline",
+  passport.authenticate('google', { scope: ['profile', 'email', 'https://www.googleapis.com/auth/drive.file'], accessType: "offline",
     approvalPrompt: "force",
 })
 );
