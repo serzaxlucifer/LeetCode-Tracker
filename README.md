@@ -28,7 +28,7 @@
 ![Alt text](./Images/editProdile.png)
 
 **Your Recent Submissions on Tracker:**
-![Alt text](./Images/your submissions.png)
+![Alt text](./Images/yoursubmissions.png)
 
 **Community Statistics:**
 ![Alt text](./Images/commstats.png)
