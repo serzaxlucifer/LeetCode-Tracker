@@ -97,7 +97,6 @@ exports.updateProfile = async (req, res) =>
 exports.getProfile = async (req, res) => 
 {
     try {
-        console.log(req.user._id);
 
 
     let obb = {email: req.user.email, 
@@ -111,7 +110,6 @@ exports.getProfile = async (req, res) =>
         totalSubmissions: req.user.totalSubmissions
     };
 
-    console.log(obb);
 
     return res.status(200).json({ message: "Success", data: obb });
 }
@@ -167,6 +165,7 @@ exports.deleteProfile = async (req, res) => {
 };
 
 exports.getRevision = async (req, res) => {
+    
     try {
 
         const result = await Submission.aggregate([

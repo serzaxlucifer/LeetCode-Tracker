@@ -19,7 +19,6 @@ passport.deserializeUser(async (id, done) => {
 });
 
 function encryptToken(token) {
-  console.log(process.env.AES_SECRET);
   const ciphertext = CryptoJS.AES.encrypt(token, process.env.AES_SECRET  , {
       mode: CryptoJS.mode.CBC,
       padding: CryptoJS.pad.Pkcs7
@@ -38,20 +37,12 @@ passport.use(new GoogleStrategy({
 }, async (accessToken, refreshToken, expiry, profile, done) => {
   try {
     let user = await User.findOne({ email: profile.emails[0].value });
-    console.log(user);
-    console.log("Processing user");
 
     if (!user) {
       // insert spreadsheet!
-      console.log("Adding user");
 
       const encryptedToken = encryptToken(accessToken);
       const refreshEncToken = encryptToken(refreshToken);
-      console.log(accessToken);
-      console.log(refreshToken);
-      console.log("Encrypting");
-      console.log(encryptedToken);
-      console.log(refreshEncToken);
       
       user = await new User({
         email: profile.emails[0].value,
@@ -64,9 +55,7 @@ passport.use(new GoogleStrategy({
       }).save();
       
       const req = {user: user};
-      console.log("Adding spreadsheet");
       const sid = await createSpreadsheet("LeetCode Tracker", req);
-      console.log("Added spreadsheet");
 
       user.spreadSheetId = sid;
       await user.save();
