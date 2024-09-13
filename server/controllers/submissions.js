@@ -138,6 +138,7 @@ async function updateSpreadsheet(SID, problem_topic, data, req, row, mode, o="")
         return rID;
     }
     catch(err) {
+        console.log("Spreadsheet Failed: ", err.message);
         return -1;
     }
 }

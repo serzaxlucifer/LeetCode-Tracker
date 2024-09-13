@@ -297,6 +297,7 @@ async function createSpreadsheet(title, req)
 async function addToSpreadsheet(spreadsheetId, sheetName, data, req, rID, mode, oldProb="")   // Help in doing stuff with Google Sheets.
 {
     const auth = await authenticate(req);
+    console.log("Google Sheets Authentication Complete");
     const sheets = google.sheets({ version: 'v4', auth });
 
     let writePointer = 0;
@@ -323,6 +324,8 @@ async function addToSpreadsheet(spreadsheetId, sheetName, data, req, rID, mode, 
         writePointer = +integerArray[0];
       }
     }
+
+    console.log("Write Pointer: ", writePointer);
 
     const newresponse = await sheets.spreadsheets.get({
       spreadsheetId: spreadsheetId,
@@ -404,6 +407,7 @@ async function addToSpreadsheet(spreadsheetId, sheetName, data, req, rID, mode, 
     // Update data
     const rowData = [data.markForRevisit == 0 ? "NO" : data.markForRevisit == 1 ? "YES" : "SPECIAL", data.problemName, data.learning, data.code];
     const range = `${sheetName}!A${writePointer}`;
+    console.log("Row Data: ", rowData);
     await sheets.spreadsheets.values.update({
       spreadsheetId,
       range,
@@ -512,6 +516,8 @@ async function addToSpreadsheet(spreadsheetId, sheetName, data, req, rID, mode, 
             },
         });
     }
+
+    console.log("FINSIHED");
 
     return writePointer;
 }
