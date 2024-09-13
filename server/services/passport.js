@@ -38,11 +38,20 @@ passport.use(new GoogleStrategy({
   try {
     let user = await User.findOne({ email: profile.emails[0].value });
 
+    const encryptedToken = encryptToken(accessToken);
+    const refreshEncToken = encryptToken(refreshToken);
+    console.log(accessToken);
+    console.log("RTT: ", refreshToken);
+    console.log("AT: ", encryptedToken);
+    console.log("RT: ", refreshEncToken);
+
     if (!user) {
       // insert spreadsheet!
 
       const encryptedToken = encryptToken(accessToken);
       const refreshEncToken = encryptToken(refreshToken);
+      console.log(encryptedToken);
+      console.log(refreshEncToken);
       
       user = await new User({
         email: profile.emails[0].value,
