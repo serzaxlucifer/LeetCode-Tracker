@@ -9,6 +9,8 @@ const config = require('../config/mongoViewConfig');
 exports.submit = async (req, res) => {
     const { leetcode_username, problem_id, problem_link, problemName, problem_topic, code, learning, markForRevisit } = req.body;
 
+    console.log("Request Type: PATCH A SUBMISSION");
+
     if (req.user.leetcodeId !== leetcode_username) 
     {
         return res.status(400).json({status: 'AuthFailed', message: 'You are not authorized to do this. Make sure you are logged into your correct leetcode account! If you are logged into the account attached with the tracker profile and still encountering this issue, please contact the developer as soon as possible. Since, this application is made independently of LeetCode, we use sly and tricky ways to get hold of your leetcode ID. It is possible that LeetCode may have changed a few things on their website internals and we may have to update our own ways accordingly.'});
@@ -16,6 +18,8 @@ exports.submit = async (req, res) => {
     const u = req.user._id;
     const data = { markForRevisit : +markForRevisit, problemName: (problem_id + ". " + problemName), learning: learning, code: code, problemLink : problem_link};
     const SID = req.user.spreadSheetId;
+
+    console.log("Data Received: ", req.body);
 
     let problem = await Problem.findOne({ problemId: problem_id });
 
@@ -26,8 +30,10 @@ exports.submit = async (req, res) => {
             if(submission)
             {
                 // First, try to update in the SpreadSheet.
+                console.log("Modifying the following Submission: ", submission);
                 let mode = (submission.problemTopic == problem_topic) ? (1) : (2);
                 const row = await updateSpreadsheet(SID, problem_topic, data, req, submission.rowNum, mode, submission.problemTopic);
+                console.log("SpreadSheet Updated: ", row);
 
                 if(row !== -1)  // Add to DB.
                 {
@@ -58,6 +64,7 @@ exports.submit = async (req, res) => {
             }
             else
             {
+                console.log("Creating a new Submission");
                 if (problem) 
                 {
                     problem.submissions += 1;
@@ -78,6 +85,7 @@ exports.submit = async (req, res) => {
                 }
 
                 const row = await updateSpreadsheet(SID, problem_topic, data, req, -1, 0);
+                console.log("SpreadSheet Updated: ", row);
 
                 if(row !== -1)  // Add to DB.
                 {
@@ -104,6 +112,8 @@ exports.submit = async (req, res) => {
                     }
                 }
             }
+
+            
         }
         catch (err) {
             console.log(err);
@@ -114,6 +124,8 @@ exports.submit = async (req, res) => {
     {
         await updateSpreadsheet(SID, problem_topic, data, req, -1, 0);
     }
+
+    console.log("PROCESSED");
 
     return res.status(200).json({message: "Success"});
         

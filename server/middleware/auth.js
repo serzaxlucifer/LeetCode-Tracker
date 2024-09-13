@@ -4,10 +4,13 @@ const jwt = require("jsonwebtoken");
 
 module.exports = async (req, res, next) => 
 {
+  console.log("-----------------------");
+  console.log("Request Received.");
   try{
     const token = req.header("Authorization")?.replace("Bearer ", "") || req.cookies?.token || req.body?.token;
     if(!token)
     {
+      console.log("Request could not be authorized.");
       return res.status(401).json({
           success:false,
           message:"Token is missing!"
@@ -38,6 +41,8 @@ module.exports = async (req, res, next) =>
         return res.status(400).json({message: "USER NOT FOUND!"});
     }
     req.user = user;
+
+    console.log("User Authorized: ", user.email);
 
     next();
 
