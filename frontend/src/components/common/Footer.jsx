@@ -21,10 +21,18 @@ const Footer = () => {
                     </Link>
                   </div>
                   <div
-                  className={`px-3`}
+                  className={`border-r border-richblack-700 cursor-pointer hover:text-richblack-50 transition-all duration-200 px-3`}
                 >
                   <a href="https://stats.uptimerobot.com/5lyXyhxvUI">
                     Check Website Status
+                  </a>
+                </div>
+
+                <div
+                  className={`cursor-pointer hover:text-richblack-50 transition-all duration-200 px-3`}
+                >
+                  <a href="https://forms.gle/wgkf7zd5up6qFzhA7">
+                    Report Bugs or Give Feedback
                   </a>
                 </div>
             </div>

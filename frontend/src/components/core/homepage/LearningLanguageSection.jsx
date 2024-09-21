@@ -22,11 +22,11 @@ const LearningLanguageSection = () => {
 			</div>
 
 			<div className="text-center text-richblack-700 mx-auto text-base font-medium">
-				Install the LeetCode Tracker chrome extension now and take control of your coding journey. Currently, this app is in beta so access is restricted. To get access, please fill this <a href="https://forms.gle/4Btm5K9AdhGDvCoR9">form</a>.
+				Install the LeetCode Tracker chrome extension now and take control of your coding journey. Download by clicking the logo below!.
 			</div>
 
 			<div className="flex flex-row items-center justify-center w-[65%] md:w-[100%]">
-			<a href="https://drive.google.com/file/d/1lra5YM3j641rnJ9yD0fXZcS_DKCqEsnm/view?usp=sharing">
+			<a href="https://chromewebstore.google.com/detail/leetcode-tracker/pijbfpmfgbcilhigpdnoibjaoijijmpp">
 			<img
 				src={logo}
 				alt="KnowYourProgressImage"
